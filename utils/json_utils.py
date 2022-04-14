@@ -35,8 +35,9 @@ def parse_json(data, schema):
     Parses a JSON object using a schema.
     """
     parsed_data = {}
-    for key, key_sequence in schema.items():
-        parsed_data[key] = extract_json_with_default(data, key_sequence)
+    for key, value in schema.items():
+        key_sequence = value["path"]
+        parsed_data[key] = extract_json_with_default(data, key_sequence, default=None)
     return parsed_data
 
 

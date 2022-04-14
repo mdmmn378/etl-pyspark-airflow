@@ -32,19 +32,9 @@ def data():
 @pytest.fixture(scope="session")
 def schema():
     schema_ = {
-        "name": ["business_card", "name"],
-        "mobile_no": ["business_card", "mobile_no"],
-        "alternate_mobile_no": ["business_card", "alternate_mobile_no"],
-        "business_name": ["business_name"],
-        "businesss_type": ["businesss_type"],
-        "cashbook_current_balance": ["cashbook_current_balance"],
-        "contextID": ["contextID"],
-        "current_location": ["current_location"],
-        "fcm_token": ["fcm_token"],
-        "fromNewAPP": ["fromNewAPP"],
-        "id": ["id"],
-        "img_base_64": ["img_base_64"],
-        "img_url": ["img_url"],
-        "is_active": ["is_active"],
+        "id": {"path": ["id"], "type": str},
+        "user_last_activity": {"path": ["user_last_activity", "_seconds"], "type": int},
+        "user_signup_date": {"path": ["user_signup_date", "_seconds"], "type": int},
+        "rating": {"path": ["rating", "stars"], "type": int},
     }
     return schema_
