@@ -1,59 +1,58 @@
-
 import pendulum
 from airflow.decorators import dag, task
 from pyspark.sql import SparkSession
 from pyspark.sql import DataFrameStatFunctions as dstat
 from pyspark.sql import functions as funcs
 import os
+import sys
+# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
 from pyspark.sql.functions import (
-    udf,
-    lit,
     col,
     current_date,
     datediff,
-    timestamp_seconds,
     current_timestamp,
 )
 
-from schemas.users import USERS_FIELD_DATA_SCHEMA
-from schemas.transactions import TRANSACTIONS_FIELD_DATA_SCHEMA
-
-from pipeline.tools import create_df_columns, read_csv, convert_column_to_json
-
-
-
-def df_to_parquet(df, file_path):
-    df.write.format("parquet").mode("overwrite").save(file_path)
-
-def load_parquet(spark_session, file_path):
-    return spark_session.read.parquet(file_path)
 
 
 @dag(
     schedule_interval=None,
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
-    tags=["example"],
+    tags=["etl"],
 )
 def creditbook_etl_dag():
+    from schemas.users import USERS_FIELD_DATA_SCHEMA
+    from schemas.transactions import TRANSACTIONS_FIELD_DATA_SCHEMA
+
+    from utilities.tools import (
+        create_df_columns,
+        convert_column_to_json,
+        read_csv,
+        load_parquet,
+        df_to_parquet,
+    )
+
     spark_session = (
-    SparkSession.builder.appName("CreditBook ETL")
-    .config("spark.executor.cores", 8)
-    .config("spark.task.cpus", 8)
-    .config("spark.cores.max", 24)
-    .config("spark.driver.extraClassPath", "jars/postgresql-42.3.3.jar")
-    .config("spark.executor.memory", "8g")
-    .config("spark.executor.instance", 4)
-    .config("spark.driver.memory", "8g")
-    .config("spark.driver.maxResultSize", "8g")
-    .getOrCreate()
-)
+        SparkSession.builder.appName("CreditBook ETL")
+        .config("spark.executor.cores", 8)
+        .config("spark.task.cpus", 8)
+        .config("spark.cores.max", 24)
+        .config("spark.driver.extraClassPath", "./jars/postgresql-42.3.3.jar")
+        .config("spark.executor.memory", "8g")
+        .config("spark.executor.instance", 4)
+        .config("spark.driver.memory", "8g")
+        .config("spark.driver.maxResultSize", "8g")
+        .config("spark.memory.offHeap.enabled", "true")
+        .config("spark.memory.offHeap.size", "10g")
+        .getOrCreate()
+    )
 
     @task(multiple_outputs=True)
     def extract():
-        users = read_csv(spark_session, "datasets/users.csv", "users")
+        users = read_csv(spark_session, "./datasets/users.csv", "users")
         users = convert_column_to_json(users, "data", USERS_FIELD_DATA_SCHEMA)
         users = create_df_columns(users, USERS_FIELD_DATA_SCHEMA, "data")
         analytics = read_csv(spark_session, "./datasets/analytics.csv", "analytics")
@@ -72,7 +71,11 @@ def creditbook_etl_dag():
         df_to_parquet(users, user_parquet_loc)
         df_to_parquet(analytics, analytics_parquet_loc)
         df_to_parquet(transactions, transactions_parquet_loc)
-        locs = {"users": user_parquet_loc, "analytics": analytics_parquet_loc, "transactions": transactions_parquet_loc}
+        locs = {
+            "users": user_parquet_loc,
+            "analytics": analytics_parquet_loc,
+            "transactions": transactions_parquet_loc,
+        }
         return locs
 
     @task()
@@ -219,7 +222,6 @@ def creditbook_etl_dag():
         final_loc = "./datasets/final.parquet"
         df_to_parquet(final, final_loc)
         return final_loc
-        
 
     @task()
     def load(final_loc):
@@ -233,7 +235,6 @@ def creditbook_etl_dag():
         ).save()
 
     load(transform(extract()))
-
 
 
 etl_output = creditbook_etl_dag()

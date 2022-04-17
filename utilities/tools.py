@@ -2,7 +2,7 @@ from pyspark.sql import SparkSession
 import json
 from functools import partial
 from pyspark.sql.functions import udf, col
-from utils.json_utils import parse_json
+from utilities.json_utils import parse_json
 from schemas.users import USERS_FIELD_DATA_SCHEMA
 from schemas.transactions import TRANSACTIONS_FIELD_DATA_SCHEMA
 
@@ -44,3 +44,11 @@ def cast_column(df, column_name, dtype):
 
 def convert_columns(df, column_name, fun):
     return df.withColumn(column_name, fun(col(column_name)))
+
+
+def df_to_parquet(df, file_path):
+    df.write.format("parquet").mode("overwrite").save(file_path)
+
+
+def load_parquet(spark_session, file_path):
+    return spark_session.read.parquet(file_path)

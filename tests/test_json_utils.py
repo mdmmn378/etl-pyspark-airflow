@@ -1,4 +1,4 @@
-from utils.json_utils import *
+from utilities.json_utils import *
 import pytest
 
 
