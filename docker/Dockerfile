@@ -10,5 +10,5 @@ RUN export JAVA_HOME
 USER airflow
 COPY ./requirements.txt ./
 RUN pip install -r requirements.txt
-COPY ./ /opt/airflow/dags
+COPY . /opt/airflow/dags
 COPY . /sources

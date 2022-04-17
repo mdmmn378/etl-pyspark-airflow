@@ -227,9 +227,9 @@ def creditbook_etl_dag():
     def load(final_loc):
         final = load_parquet(spark_session=spark_session, file_path=final_loc)
         final.write.format("jdbc").option(
-            "url", "jdbc:postgresql://localhost:5432/test"
-        ).option("dbtable", "users_dw").option("user", "mamun").option(
-            "password", "mamun1234"
+            "url", "jdbc:postgresql://postgres:5432/airflow"
+        ).option("dbtable", "users_dw").option("user", "airflow").option(
+            "password", "airflow"
         ).mode(
             "append"
         ).save()
