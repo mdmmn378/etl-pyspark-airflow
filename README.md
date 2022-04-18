@@ -10,6 +10,7 @@
 - Create a new virtual environment `python -m venv venv`
 - Activate the environment `source venv/bin/activate`
 - Install dependencies `pip install -r requirements-dev.txt`
+- `csv` files should be placed inside the datasets directory
 - Set the following ENVIRONMENT VARIABLES
     - `export AIRFLOW__CORE__DAGS_FOLDER=$PWD/ AIRFLOW_HOME=$PWD/airflow AIRFLOW__CORE__LOAD_EXAMPLES=false`
 - Airflow commands for initiating local db and creating user
