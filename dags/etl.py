@@ -16,7 +16,7 @@ load_dotenv()
 
 @dag(
     schedule_interval=None,
-    start_date=pendulum.datetime(2022, 10, 19, tz="UTC"),
+    start_date=pendulum.datetime(2021, 10, 19, tz="UTC"),
     catchup=False,
     tags=["etl"],
 )
@@ -43,7 +43,7 @@ def creditbook_etl_dag():
         .config("spark.cores.max", os.environ.get("SPARK_CORES_MAX", 24))
         .config(
             "spark.driver.extraClassPath",
-            os.environ.get("SPARK_DRIVER_EXTRA_CLASSPATH", 24),
+            os.environ.get("SPARK_DRIVER_EXTRA_CLASSPATH"),
         )
         .config("spark.executor.memory", os.environ.get("SPARK_EXECUTOR_MEMORY", "8g"))
         .config("spark.executor.instance", os.environ.get("SPARK_EXECUTOR_INSTANCE", 4))
@@ -65,17 +65,19 @@ def creditbook_etl_dag():
 
     @task(multiple_outputs=True)
     def extract():
-        users = read_csv(spark_session, "./datasets/users.csv", "users")
+        users = read_csv(
+            spark_session, str(local_data_dir / os.getenv("USERS_CSV_FILE")), "users"
+        )
         users = convert_column_to_json(users, "data", USERS_FIELD_DATA_SCHEMA)
         users = create_df_columns(users, USERS_FIELD_DATA_SCHEMA, "data")
         analytics = read_csv(
             spark_session,
-            str(local_data_dir / os.environ.get("ANALYTICS_CSV_FILE")),
+            str(local_data_dir / os.getenv("ANALYTICS_CSV_FILE")),
             "analytics",
         )
         transactions = read_csv(
             spark_session,
-            str(local_data_dir / os.environ.get("ANALYTICS_CSV_FILE")),
+            str(local_data_dir / os.getenv("TRANSACTIONS_CSV_FILE")),
             "transactions",
         )
         transactions = convert_column_to_json(
@@ -262,11 +264,12 @@ def creditbook_etl_dag():
     @task()
     def load(final_loc):
         final = load_parquet(spark_session=spark_session, file_path=final_loc)
-        final.write.format("jdbc").option(
-            "url", Path(os.environ["DATABASE_URL"]) / os.environ["DATABASE_NAME"]
-        ).option("dbtable", os.environ["DATA_TABLE_NAME"]).option(
-            "user", os.environ["_AIRFLOW_WWW_USER_USERNAME"]
-        ).option(
+        host = os.environ.get("DB_HOST")
+        db_name = os.environ.get("DB_NAME")
+        url = f"jdbc:postgresql://{host}:5432/{db_name}"
+        final.write.format("jdbc").option("url", url).option(
+            "dbtable", os.environ["DATA_TABLE_NAME"]
+        ).option("user", os.environ["_AIRFLOW_WWW_USER_USERNAME"]).option(
             "password", os.environ["_AIRFLOW_WWW_USER_PASSWORD"]
         ).mode(
             "append"

@@ -5,8 +5,7 @@ from collections.abc import Mapping, MutableMapping
 def extract_json_sequence(data, key_sequence):
     if len(key_sequence) == 1:
         return data[key_sequence[0]]
-    else:
-        return extract_json_sequence(data[key_sequence[0]], key_sequence[1:])
+    return extract_json_sequence(data[key_sequence[0]], key_sequence[1:])
 
 
 def extract_json_with_default(data, key_sequence, default=None):
