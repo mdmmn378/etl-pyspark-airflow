@@ -3,13 +3,12 @@ import os
 from pathlib import Path
 
 import pendulum
+from airflow.decorators import dag, task
 from dotenv import load_dotenv
 from pyspark.sql import DataFrameStatFunctions as dstat
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as funcs
 from pyspark.sql.functions import col, current_date, current_timestamp, datediff
-
-from airflow.decorators import dag, task
 
 load_dotenv()
 
@@ -276,6 +275,7 @@ def creditbook_etl_dag():
         ).save()
         remove_file(final_loc)
         gc.collect()
+        # spark_session.stop()
 
     load(transform(extract()))
 

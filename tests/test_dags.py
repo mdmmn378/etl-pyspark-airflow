@@ -4,7 +4,6 @@ from random import random
 
 import pendulum
 import pytest
-
 from airflow.utils.state import DagRunState
 from airflow.utils.types import DagRunType
 
@@ -16,6 +15,7 @@ TEST_TASK_ID = "extract"
 
 
 from airflow.models import DagBag
+
 from dags.etl import creditbook_etl_dag
 
 
