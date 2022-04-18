@@ -41,7 +41,10 @@ def creditbook_etl_dag():
         .config("spark.executor.cores", os.environ.get("SPARK_EXECUTOR_CORES", 8))
         .config("spark.task.cpus", os.environ.get("SPARK_TASK_CPUS", 8))
         .config("spark.cores.max", os.environ.get("SPARK_CORES_MAX", 24))
-        .config("spark.driver.extraClassPath", "./jars/postgresql-42.3.3.jar")
+        .config(
+            "spark.driver.extraClassPath",
+            os.environ.get("SPARK_DRIVER_EXTRA_CLASSPATH", 24),
+        )
         .config("spark.executor.memory", os.environ.get("SPARK_EXECUTOR_MEMORY", "8g"))
         .config("spark.executor.instance", os.environ.get("SPARK_EXECUTOR_INSTANCE", 4))
         .config("spark.driver.memory", os.environ.get("SPARK_DRIVER_MEMORY", "8g"))
@@ -62,11 +65,7 @@ def creditbook_etl_dag():
 
     @task(multiple_outputs=True)
     def extract():
-        users = read_csv(
-            spark_session,
-            str(local_data_dir / os.environ.get("USERS_CSV_FILE")),
-            "users",
-        )
+        users = read_csv(spark_session, "./datasets/users.csv", "users")
         users = convert_column_to_json(users, "data", USERS_FIELD_DATA_SCHEMA)
         users = create_df_columns(users, USERS_FIELD_DATA_SCHEMA, "data")
         analytics = read_csv(
