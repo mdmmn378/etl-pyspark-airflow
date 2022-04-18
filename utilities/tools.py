@@ -1,10 +1,15 @@
-from pyspark.sql import SparkSession
 import json
+import os
+import random
+import string
 from functools import partial
-from pyspark.sql.functions import udf, col
-from utilities.json_utils import parse_json
-from schemas.users import USERS_FIELD_DATA_SCHEMA
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, udf
+
 from schemas.transactions import TRANSACTIONS_FIELD_DATA_SCHEMA
+from schemas.users import USERS_FIELD_DATA_SCHEMA
+from utilities.json_utils import parse_json
 
 
 def jsonify_field(x, schema=None):
@@ -52,3 +57,18 @@ def df_to_parquet(df, file_path):
 
 def load_parquet(spark_session, file_path):
     return spark_session.read.parquet(file_path)
+
+
+def get_random_file_name(prefix, length, ext):
+    return (
+        prefix
+        + "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
+        + ext
+    )
+
+
+def remove_file(file_path):
+    try:
+        os.remove(file_path)
+    except OSError:
+        pass

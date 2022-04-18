@@ -1,15 +1,10 @@
-from utilities.json_utils import *
 import pytest
+
+from utilities.json_utils import *
 
 
 def test_extract_json_sequence():
-    data = {
-        "a": {
-            "b": {
-                "c": "d"
-            }
-        }
-    }
+    data = {"a": {"b": {"c": "d"}}}
     key_sequence = ["a", "b", "c"]
     assert extract_json_sequence(data, key_sequence) == "d"
     with pytest.raises(KeyError):
@@ -17,18 +12,11 @@ def test_extract_json_sequence():
 
 
 def test_extract_json_with_default():
-    data = {
-        "a": {
-            "b": {
-                "c": "d"
-            }
-        }
-    }
+    data = {"a": {"b": {"c": "d"}}}
     key_sequence = ["a", "b", "c"]
     assert extract_json_with_default(data, key_sequence) == "d"
     assert extract_json_with_default(data, ["a", "x"]) == None
     assert extract_json_with_default(data, ["z", "x"]) == None
-
 
 
 def test_parse_json(data, schema):

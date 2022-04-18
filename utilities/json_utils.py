@@ -1,22 +1,15 @@
 import collections
-from collections.abc import MutableMapping, Mapping
+from collections.abc import Mapping, MutableMapping
 
 
 def extract_json_sequence(data, key_sequence):
-    """
-    Extracts a value from a nested dictionary using a sequence of keys.
-    """
     if len(key_sequence) == 1:
         return data[key_sequence[0]]
     else:
         return extract_json_sequence(data[key_sequence[0]], key_sequence[1:])
 
 
-
 def extract_json_with_default(data, key_sequence, default=None):
-    """
-    Extracts a value from a nested dictionary using a sequence of keys.
-    """
     if len(key_sequence) == 1:
         try:
             return data[key_sequence[0]]
@@ -26,21 +19,19 @@ def extract_json_with_default(data, key_sequence, default=None):
             return default
     else:
         try:
-            return extract_json_with_default(data[key_sequence[0]], key_sequence[1:], default=default)
+            return extract_json_with_default(
+                data[key_sequence[0]], key_sequence[1:], default=default
+            )
         except KeyError:
             return default
 
 
 def parse_json(data, schema):
-    """
-    Parses a JSON object using a schema.
-    """
     parsed_data = {}
     for key, value in schema.items():
         key_sequence = value["path"]
         parsed_data[key] = extract_json_with_default(data, key_sequence, default=None)
     return parsed_data
-
 
 
 def flatten_json(data, prefix=None):
@@ -51,9 +42,9 @@ def flatten_json(data, prefix=None):
         else:
             result[prefix + "." + k].append(v)
     return dict(result)
-    
 
-def flatten_nested_dict(d, parent_key='', sep='_'):
+
+def flatten_nested_dict(d, parent_key="", sep="_"):
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -62,6 +53,3 @@ def flatten_nested_dict(d, parent_key='', sep='_'):
         else:
             items.append((new_key, v))
     return dict(items)
-
-
-
