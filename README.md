@@ -1,8 +1,12 @@
-# CreditBook Assignment
--------------------------
+# ETL Pipeline with PySpark and Apache Airflow
+
+---
+
+`Demo for CreditBook`
 
 ## Installation and Run
--------------------------
+
+---
 
 #### Local
 
@@ -12,41 +16,44 @@
 - Install dependencies `pip install -r requirements-dev.txt`
 - `csv` files should be placed inside the datasets directory
 - Set the following ENVIRONMENT VARIABLES
-    - `export AIRFLOW__CORE__DAGS_FOLDER=$PWD/ AIRFLOW_HOME=$PWD/airflow AIRFLOW__CORE__LOAD_EXAMPLES=false`
+  - `export AIRFLOW__CORE__DAGS_FOLDER=$PWD/ AIRFLOW_HOME=$PWD/airflow AIRFLOW__CORE__LOAD_EXAMPLES=false`
 - Airflow commands for initiating local db and creating user
-    - `airflow db init`
-    - 
-    ```bash
-    airflow users create \
-    --username airflow \
-    --firstname Peter \
-    --lastname Parker \
-    --role Admin \
-    --email spiderman@superhero.org
-    ```
-    - Set a password
+  - `airflow db init`
+  - -
+  -
+  ```bash
+  airflow users create \
+  --username airflow \
+  --firstname Peter \
+  --lastname Parker \
+  --role Admin \
+  --email spiderman@superhero.org
+  ```
+  - Set a password
 - Run the following commands in separate shell instances
-    - `airflow scheduler`
-    - `airflow webserver`
+  - `airflow scheduler`
+  - `airflow webserver`
 - Now visit http://localhost:8080 and login
 - You might need to change the DB_HOST to set the appropriate DB
 
-#### With docker 
+#### With docker
 
 - docker-compose -f docker-compose-airflow.yaml up
 
-
 ## Overview
-------------------------
+
+---
+
 ETL according to Wikipedia
-- In computing, extract, transform, the load is a three-phase process where data is first extracted then transformed, and finally loaded into an output data container. 
+
+- In computing, extract, transform, the load is a three-phase process where data is first extracted then transformed, and finally loaded into an output data container.
 
 ![image](images/etl.png)
 
-For solving this particular problem, it seemed reasonable to use the following tools 
+For solving this particular problem, it seemed reasonable to use the following tools
+
 - Apache Pyspark --> Analytics Engine
 - Apache Airflow --> Workflow Management Tool
-
 
 #### Extract
 
@@ -64,14 +71,15 @@ Disclaimer: Calculated fields were most probably expected to be nested fields. T
 
 #### Load
 
-As no data warehouse service was provided, I chose to use Postgres as a local data warehouse. Postgres driver for Spark was used to transfer processed data faster to the database. Spark session, dataset artifacts, garbage variable, etc. are torn down in this step. 
+As no data warehouse service was provided, I chose to use Postgres as a local data warehouse. Postgres driver for Spark was used to transfer processed data faster to the database. Spark session, dataset artifacts, garbage variable, etc. are torn down in this step.
 
 The exported table can be accessed from [Postgres Admin Portal](http://localhost:5050). Credentials are stored in the `.env` file. (user: airflow, pass: airflow)
 
 ## Future Steps
+
 Although a working ETL pipeline has been established, it is still not production-ready and can be improved in various ways. Some of the points are discussed below-
 
-- A more optimized dag flow could be written 
+- A more optimized dag flow could be written
 - The airflow docker image is not optimized for performance. A more lightweight image could be built from smaller base images with all the requirements installed inside.
 - Currently, the ETL file contains all the concrete implementations of Extract, Transform, and Load. Distributing these elements across multiple files will surely improve the readability of code and align better with the Single Responsibility Principle.
 - Better test coverage could be included to make the pipeline more reliable.
